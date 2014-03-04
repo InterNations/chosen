@@ -18,6 +18,16 @@
         text-transform: uppercase;
     }
 
+    .selected-country-code {
+        position: absolute;
+        top: 2px;
+        right: 20px;
+        height: 20px;
+        color: #fff;
+        background-color: #242424;
+        text-transform: uppercase;
+    }
+
     .footer {
         background-color: #242424;
         padding: 5px;
@@ -1470,9 +1480,13 @@
                 }
                 return html;
             },
+            render_selected: function(optionElement) {
+                var countryCode = optionElement.getAttribute('data-country-code');
+                return optionElement.text + '<b class="selected-country-code">' + countryCode + '</b>';
+            },
             render_footer: function() {
                 return '<div class="footer">Footer text...</div>';
-            }
+            },
       }
     }
     for (var selector in config) {

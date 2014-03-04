@@ -796,7 +796,7 @@
     };
 
     Chosen.prototype.result_select = function(evt) {
-      var high, high_id, item, position;
+      var high, high_id, item, option_element, position, selected_html;
       if (this.result_highlight) {
         high = this.result_highlight;
         high_id = high.attr("id");
@@ -820,10 +820,12 @@
         item.selected = true;
         this.form_field.options[item.options_index].selected = true;
         this.selected_option_count = null;
+        option_element = this.form_field.options[item.options_index];
+        selected_html = this.options.render_selected ? this.options.render_selected(option_element) : item.text;
         if (this.is_multiple) {
           this.choice_build(item);
         } else {
-          this.selected_item.find("span").first().text(item.text);
+          this.selected_item.find("span").first().html(selected_html);
           if (this.allow_single_deselect) {
             this.single_deselect_control_build();
           }

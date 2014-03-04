@@ -352,10 +352,14 @@ class Chosen extends AbstractChosen
       @form_field.options[item.options_index].selected = true
       @selected_option_count = null
 
+      # Added by InterNations optional selected item template
+      option_element = @form_field.options[item.options_index]
+      selected_html = if @options.render_selected then @options.render_selected(option_element) else item.text
+
       if @is_multiple
         this.choice_build item
       else
-        @selected_item.find("span").first().text item.text
+        @selected_item.find("span").first().html selected_html
         this.single_deselect_control_build() if @allow_single_deselect
 
       this.results_hide() unless (evt.metaKey or evt.ctrlKey) and @is_multiple
