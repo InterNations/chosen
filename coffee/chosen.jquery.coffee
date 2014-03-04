@@ -186,6 +186,7 @@ class Chosen extends AbstractChosen
         if data.selected and @is_multiple
           this.choice_build data
         else if data.selected and not @is_multiple
+          # Added by InterNations optional selected item template
           option_element = @form_field.options[data.options_index]
           selected_html = if @options.render_selected then @options.render_selected(option_element) else data.text
           @selected_item.removeClass("chzn-default").find("span").html selected_html
