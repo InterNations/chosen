@@ -1,6 +1,7 @@
 class SelectParser
-  
-  constructor: ->
+
+  constructor: (settings) ->
+    {@render_option} = settings
     @options_index = 0
     @parsed = []
 
@@ -25,12 +26,16 @@ class SelectParser
       if option.text != ""
         if group_position?
           @parsed[group_position].children += 1
+
+        # Added by InterNations: custom option renderer
+        html = if @render_option then @render_option(option) else option.innerHTML
+
         @parsed.push
           array_index: @parsed.length
           options_index: @options_index
           value: option.value
           text: option.text
-          html: option.innerHTML
+          html: html
           selected: option.selected
           disabled: if group_disabled is true then group_disabled else option.disabled
           group_array_index: group_position
@@ -43,8 +48,8 @@ class SelectParser
           empty: true
       @options_index += 1
 
-SelectParser.select_to_array = (select) ->
-  parser = new SelectParser()
+SelectParser.select_to_array = (select, settings) ->
+  parser = new SelectParser(settings)
   parser.add_node( child ) for child in select.childNodes
   parser.parsed
 

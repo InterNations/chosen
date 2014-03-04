@@ -47,6 +47,10 @@ class Chosen extends AbstractChosen
     @form_field_jq.hide().after @container
     @dropdown = @container.find('div.chzn-drop').first()
 
+    # Added by InterNations: optional footer
+    if @options.render_footer
+      @dropdown.append $(@options.render_footer())
+
     @search_field = @container.find('input').first()
     @search_results = @container.find('ul.chzn-results').first()
     this.search_field_scale()
@@ -59,7 +63,7 @@ class Chosen extends AbstractChosen
     else
       @search_container = @container.find('div.chzn-search').first()
       @selected_item = @container.find('.chzn-single').first()
-    
+
     this.results_build()
     this.set_tab_index()
     this.set_label_behavior()
@@ -161,7 +165,8 @@ class Chosen extends AbstractChosen
     @parsing = true
     @selected_option_count = null
 
-    @results_data = root.SelectParser.select_to_array @form_field
+    # Added by InterNations: passing custom renderer
+    @results_data = root.SelectParser.select_to_array @form_field, {render_option: @options.render_option}
 
     if @is_multiple and this.choices_count() > 0
       @search_choices.find("li.search-choice").remove()
@@ -288,7 +293,7 @@ class Chosen extends AbstractChosen
       close_link = $('<a />', { href: '#', class: 'search-choice-close',  rel: item.array_index })
       close_link.click (evt) => this.choice_destroy_link_click(evt)
       choice.append close_link
-    
+
     @search_container.before  choice
 
   choice_destroy_link_click: (evt) ->
@@ -553,7 +558,7 @@ class Chosen extends AbstractChosen
         w = @f_width - 10
 
       @search_field.css({'width': w + 'px'})
-  
+
   generate_random_id: ->
     string = "sel" + this.generate_random_char() + this.generate_random_char() + this.generate_random_char()
     while $("#" + string).length > 0
