@@ -12,6 +12,9 @@
 
   SelectParser = (function() {
     function SelectParser(settings) {
+      if (settings == null) {
+        settings = {};
+      }
       this.render_option = settings.render_option;
       this.options_index = 0;
       this.parsed = [];

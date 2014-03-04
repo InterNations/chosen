@@ -1,6 +1,6 @@
 class SelectParser
 
-  constructor: (settings) ->
+  constructor: (settings={}) ->
     {@render_option} = settings
     @options_index = 0
     @parsed = []
