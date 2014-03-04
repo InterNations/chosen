@@ -574,7 +574,7 @@
     };
 
     Chosen.prototype.results_build = function() {
-      var content, data, _i, _len, _ref1;
+      var content, data, option_element, selected_html, _i, _len, _ref1;
       this.parsing = true;
       this.selected_option_count = null;
       this.results_data = root.SelectParser.select_to_array(this.form_field, {
@@ -601,7 +601,9 @@
           if (data.selected && this.is_multiple) {
             this.choice_build(data);
           } else if (data.selected && !this.is_multiple) {
-            this.selected_item.removeClass("chzn-default").find("span").text(data.text);
+            option_element = this.form_field.options[data.options_index];
+            selected_html = this.options.render_selected ? this.options.render_selected(option_element) : data.text;
+            this.selected_item.removeClass("chzn-default").find("span").html(selected_html);
             if (this.allow_single_deselect) {
               this.single_deselect_control_build();
             }

@@ -186,7 +186,9 @@ class Chosen extends AbstractChosen
         if data.selected and @is_multiple
           this.choice_build data
         else if data.selected and not @is_multiple
-          @selected_item.removeClass("chzn-default").find("span").text data.text
+          option_element = @form_field.options[data.options_index]
+          selected_html = if @options.render_selected then @options.render_selected(option_element) else data.text
+          @selected_item.removeClass("chzn-default").find("span").html selected_html
           this.single_deselect_control_build() if @allow_single_deselect
 
     this.search_field_disabled()
