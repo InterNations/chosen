@@ -1,7 +1,7 @@
 class SelectParser
 
   constructor: (settings={}) ->
-    {@render_option} = settings
+    {@render_option, @render_selected} = settings
     @options_index = 0
     @parsed = []
 
@@ -21,21 +21,25 @@ class SelectParser
       disabled: group.disabled
     this.add_option( option, group_position, group.disabled ) for option in group.childNodes
 
+  get_renderer: (custom_renderer, option_element) ->
+    (html = @html, option = option_element) ->
+      if custom_renderer then custom_renderer(html, option) else html
+
   add_option: (option, group_position, group_disabled) ->
     if option.nodeName.toUpperCase() is "OPTION"
       if option.text != ""
         if group_position?
           @parsed[group_position].children += 1
 
-        # Added by InterNations: custom option renderer
-        html = if @render_option then @render_option(option) else option.innerHTML
-
         @parsed.push
           array_index: @parsed.length
           options_index: @options_index
           value: option.value
           text: option.text
-          html: html
+          html: option.innerHTML
+          # Added by InterNations: option renders itself
+          render: @get_renderer @render_option, option
+          render_selected: @get_renderer @render_selected, option
           selected: option.selected
           disabled: if group_disabled is true then group_disabled else option.disabled
           group_array_index: group_position

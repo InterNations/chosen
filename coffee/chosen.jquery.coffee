@@ -166,7 +166,8 @@ class Chosen extends AbstractChosen
     @selected_option_count = null
 
     # Added by InterNations: passing custom renderer
-    @results_data = root.SelectParser.select_to_array @form_field, {render_option: @options.render_option}
+    @results_data = root.SelectParser.select_to_array @form_field,
+      {render_option: @options.render_option, render_selected: @options.render_selected}
 
     if @is_multiple and this.choices_count() > 0
       @search_choices.find("li.search-choice").remove()
@@ -187,8 +188,7 @@ class Chosen extends AbstractChosen
           this.choice_build data
         else if data.selected and not @is_multiple
           # Added by InterNations optional selected item template
-          option_element = @form_field.options[data.options_index]
-          selected_html = if @options.render_selected then @options.render_selected(option_element) else data.text
+          selected_html = data.render_selected data.text
           @selected_item.removeClass("chzn-default").find("span").html selected_html
           this.single_deselect_control_build() if @allow_single_deselect
 
@@ -357,12 +357,11 @@ class Chosen extends AbstractChosen
 
       # Added by InterNations optional selected item template
       option_element = @form_field.options[item.options_index]
-      selected_html = if @options.render_selected then @options.render_selected(option_element) else item.text
 
       if @is_multiple
         this.choice_build item
       else
-        @selected_item.find("span").first().html selected_html
+        @selected_item.find("span").first().html item.render_selected(item.text)
         this.single_deselect_control_build() if @allow_single_deselect
 
       this.results_hide() unless (evt.metaKey or evt.ctrlKey) and @is_multiple
@@ -411,55 +410,66 @@ class Chosen extends AbstractChosen
     @selected_item.find("span").first().after "<abbr class=\"search-choice-close\"></abbr>" unless @selected_item.find("abbr").length
     @selected_item.addClass("chzn-single-with-deselect")
 
+  get_search_query_regex: (query, contains) ->
+    expr = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
+    expr = "^" + expr if not contains
+    return new RegExp(expr, 'i')
+
   winnow_results: ->
     this.no_results_clear()
 
     results = 0
+    query = if @search_field.val() is @default_text then "" else $('<div/>').text($.trim(@search_field.val())).html()
 
-    searchText = if @search_field.val() is @default_text then "" else $('<div/>').text($.trim(@search_field.val())).html()
-    regexAnchor = if @search_contains then "" else "^"
-    regex = new RegExp(regexAnchor + searchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), 'i')
-    zregex = new RegExp(searchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), 'i')
+    # Regex used to test the actual value
+    query_regex = @get_search_query_regex(query, @search_contains)
+
+    # Regex used for matching within markup when we modify the DOM
+    dom_search_regex = @get_search_query_regex(query)
 
     for option in @results_data
-      if not option.empty
-        if option.group
-          $('#' + option.dom_id).css('display', 'none')
-        else
-          found = false
-          result_id = option.dom_id
-          result = $("#" + result_id)
+      continue if option.empty
 
-          if regex.test option.html
-            found = true
-            results += 1
-          else if @enable_split_word_search and (option.html.indexOf(" ") >= 0 or option.html.indexOf("[") == 0)
-            #TODO: replace this substitution of /\[\]/ with a list of characters to skip.
-            parts = option.html.replace(/\[|\]/g, "").split(" ")
-            if parts.length
-              for part in parts
-                if regex.test part
-                  found = true
-                  results += 1
+      if option.group
+        # Always hide groups. When we run by an option that needs to be shown, we will show the group again
+        $('#' + option.dom_id).css('display', 'none')
+      else
+        found = false
+        result_id = option.dom_id
+        result = $("#" + result_id)
 
-          if found
-            if searchText.length
-              startpos = option.html.search zregex
-              text = option.html.substr(0, startpos + searchText.length) + '</em>' + option.html.substr(startpos + searchText.length)
-              text = text.substr(0, startpos) + '<em>' + text.substr(startpos)
-            else
-              text = option.html
+        if query_regex.test option.html
+          found = true
+          results += 1
+        else if @enable_split_word_search and (option.html.indexOf(" ") >= 0 or option.html.indexOf("[") == 0)
+          #TODO: replace this substitution of /\[\]/ with a list of characters to skip.
+          parts = option.html.replace(/\[|\]/g, "").split(" ")
+          if parts.length
+            for part in parts
+              if query_regex.test part
+                found = true
+                results += 1
 
-            result.html(text)
-            this.result_activate result, option
-
-            $("#" + @results_data[option.group_array_index].dom_id).css('display', 'list-item') if option.group_array_index?
+        if found
+          if query.length
+            startpos = option.html.search dom_search_regex
+            html = option.html.substr(0, startpos + query.length) + '</em>' + option.html.substr(startpos + query.length)
+            html = html.substr(0, startpos) + '<em>' + html.substr(startpos)
           else
-            this.result_clear_highlight() if @result_highlight and result_id is @result_highlight.attr 'id'
-            this.result_deactivate result
+            html = option.html
 
-    if results < 1 and searchText.length
-      this.no_results searchText
+          # Re render the option using updated html
+          result.html option.render(html)
+          this.result_activate result, option
+
+          # Display the group element again in case we are inside a group
+          $("#" + @results_data[option.group_array_index].dom_id).css('display', 'list-item') if option.group_array_index?
+        else
+          this.result_clear_highlight() if @result_highlight and result_id is @result_highlight.attr 'id'
+          this.result_deactivate result
+
+    if results < 1 and query.length
+      this.no_results query
     else
       this.winnow_results_set_highlight()
 

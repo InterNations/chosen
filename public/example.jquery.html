@@ -1472,17 +1472,16 @@
       '.chzn-select-no-results': {no_results_text:'Oops, nothing found!'},
       '.chzn-select-width'     : {width:"95%"},
       '.forked-select'         : {
-            render_option: function(optionElement) {
-                var countryCode = optionElement.getAttribute('data-country-code'),
-                    html = optionElement.innerHTML;
+            render_option: function(html, optionElement) {
+                var countryCode = optionElement.getAttribute('data-country-code');
                 if (countryCode) {
                     html = '<span class="country-code">' + countryCode + '</span>' + html;
                 }
                 return html;
             },
-            render_selected: function(optionElement) {
+            render_selected: function(html, optionElement) {
                 var countryCode = optionElement.getAttribute('data-country-code');
-                return optionElement.text + '<b class="selected-country-code">' + countryCode + '</b>';
+                return html + '<b class="selected-country-code">' + countryCode + '</b>';
             },
             render_footer: function() {
                 return '<div class="footer">Footer text...</div>';

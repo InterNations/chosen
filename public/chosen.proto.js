@@ -15,7 +15,7 @@
       if (settings == null) {
         settings = {};
       }
-      this.render_option = settings.render_option;
+      this.render_option = settings.render_option, this.render_selected = settings.render_selected;
       this.options_index = 0;
       this.parsed = [];
     }
@@ -47,20 +47,36 @@
       return _results;
     };
 
+    SelectParser.prototype.get_renderer = function(custom_renderer, option_element) {
+      return function(html, option) {
+        if (html == null) {
+          html = this.html;
+        }
+        if (option == null) {
+          option = option_element;
+        }
+        if (custom_renderer) {
+          return custom_renderer(html, option);
+        } else {
+          return html;
+        }
+      };
+    };
+
     SelectParser.prototype.add_option = function(option, group_position, group_disabled) {
-      var html;
       if (option.nodeName.toUpperCase() === "OPTION") {
         if (option.text !== "") {
           if (group_position != null) {
             this.parsed[group_position].children += 1;
           }
-          html = this.render_option ? this.render_option(option) : option.innerHTML;
           this.parsed.push({
             array_index: this.parsed.length,
             options_index: this.options_index,
             value: option.value,
             text: option.text,
-            html: html,
+            html: option.innerHTML,
+            render: this.get_renderer(this.render_option, option),
+            render_selected: this.get_renderer(this.render_selected, option),
             selected: option.selected,
             disabled: group_disabled === true ? group_disabled : option.disabled,
             group_array_index: group_position,
@@ -205,7 +221,7 @@
         classes.push(option.classes);
       }
       style = option.style.cssText !== "" ? " style=\"" + option.style + "\"" : "";
-      return '<li id="' + option.dom_id + '" class="' + classes.join(' ') + '"' + style + '>' + option.html + '</li>';
+      return '<li id="' + option.dom_id + '" class="' + classes.join(' ') + '"' + style + '>' + option.render() + '</li>';
     };
 
     AbstractChosen.prototype.results_update_field = function() {
