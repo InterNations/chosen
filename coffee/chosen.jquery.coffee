@@ -451,7 +451,7 @@ class Chosen extends AbstractChosen
                 results += 1
 
         if found
-          if query.length
+          if @enable_query_hinting and query.length
             startpos = option.html.search dom_search_regex
             html = option.html.substr(0, startpos + query.length) + '</em>' + option.html.substr(startpos + query.length)
             html = html.substr(0, startpos) + '<em>' + html.substr(startpos)

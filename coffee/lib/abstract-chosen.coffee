@@ -27,6 +27,7 @@ class AbstractChosen
     @disable_search_threshold = @options.disable_search_threshold || 0
     @disable_search = @options.disable_search || false
     @enable_split_word_search = if @options.enable_split_word_search? then @options.enable_split_word_search else true
+    @enable_query_hinting = !!@options.enable_query_hinting
     @search_contains = @options.search_contains || false
     @single_backstroke_delete = @options.single_backstroke_delete || false
     @max_selected_options = @options.max_selected_options || Infinity
@@ -50,7 +51,7 @@ class AbstractChosen
       setTimeout (=> this.container_mousedown()), 50 unless @active_field
     else
       @activate_field() unless @active_field
-  
+
   input_blur: (evt) ->
     if not @mouse_on_container
       @active_field = false
@@ -95,7 +96,7 @@ class AbstractChosen
     @selected_option_count = 0
     for option in @form_field.options
       @selected_option_count += 1 if option.selected
-    
+
     return @selected_option_count
 
   choices_click: (evt) ->
@@ -127,7 +128,7 @@ class AbstractChosen
     new_id = this.generate_random_id()
     @form_field.id = new_id
     new_id
-  
+
   generate_random_char: ->
     chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     rand = Math.floor(Math.random() * chars.length)
@@ -136,7 +137,7 @@ class AbstractChosen
   container_width: ->
     return if @options.width? then @options.width else "#{@form_field.offsetWidth}px"
 
-  # class methods and variables ============================================================ 
+  # class methods and variables ============================================================
 
   @browser_is_supported: ->
     if window.navigator.appName == "Microsoft Internet Explorer"
