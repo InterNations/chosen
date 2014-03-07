@@ -397,7 +397,7 @@
     };
 
     Chosen.prototype.set_up_html = function() {
-      var container_classes, container_props;
+      var container_classes, container_props, footer;
       this.container_id = this.form_field.id.length ? this.form_field.id.replace(/[^\w]/g, '_') : this.generate_field_id();
       this.container_id += "_chzn";
       container_classes = ["chzn-container"];
@@ -423,7 +423,10 @@
       this.form_field_jq.hide().after(this.container);
       this.dropdown = this.container.find('div.chzn-drop').first();
       if (this.options.render_footer) {
-        this.dropdown.append($(this.options.render_footer()));
+        footer = $(this.options.render_footer()).bind("click", function(e) {
+          return e.stopPropagation();
+        });
+        this.dropdown.append(footer);
       }
       this.search_field = this.container.find('input').first();
       this.search_results = this.container.find('ul.chzn-results').first();

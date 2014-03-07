@@ -49,7 +49,11 @@ class Chosen extends AbstractChosen
 
     # Added by InterNations: optional footer
     if @options.render_footer
-      @dropdown.append $(@options.render_footer())
+      # We need to stop click propagation on our footer because
+      # all clicks will be cancelled on container level
+      footer = $(@options.render_footer()).bind "click", (e) ->
+        e.stopPropagation()
+      @dropdown.append footer
 
     @search_field = @container.find('input').first()
     @search_results = @container.find('ul.chzn-results').first()
